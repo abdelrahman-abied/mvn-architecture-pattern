@@ -1,0 +1,885 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A comprehensive guide to the MVN Architecture pattern for Flutter & Riverpod developers. Learn modern, scalable patterns for building maintainable Flutter applications.">
+    <meta name="keywords" content="MVN Architecture, Flutter, Riverpod, State Management, Dart, Flutter Development">
+    <meta name="author" content="MVN Architecture Guide">
+    <title>The MVN Architecture for Flutter & Riverpod</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --header-bg: #3f51b5;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+            --code-bg: #e8eaf6;
+            --primary-color: #3f51b5;
+            --accent-color: #ff9800;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --header-bg: #283593;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+            --code-bg: #1e1e1e;
+            --primary-color: #5c6bc0;
+            --accent-color: #ffa726;
+        }
+
+        /* Base Styles for Readability */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            line-height: 1.6; 
+            color: var(--text-color); 
+            margin: 0; 
+            background-color: var(--bg-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: var(--text-color); line-height: 1.2; }
+        h2 { border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-top: 40px; }
+        code { background-color: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        pre { 
+            display: block; 
+            padding: 15px; 
+            overflow-x: auto; 
+            border: 1px solid var(--border-color);
+            background-color: var(--code-bg) !important;
+            position: relative;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        pre code { background-color: transparent; padding: 0; }
+        /* Navigation */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            background-color: var(--card-bg);
+            z-index: 1000;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        .theme-toggle {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+        .theme-toggle:hover {
+            opacity: 0.9;
+        }
+
+        /* Layout & Component Styles */
+        .header { 
+            background-color: var(--header-bg); 
+            color: white; 
+            padding: 60px 0; 
+            text-align: center; 
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 20s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+        .header h1 { color: white; margin-bottom: 10px; font-size: 2.5em; position: relative; z-index: 1; }
+        .header p { font-size: 1.2em; opacity: 0.9; position: relative; z-index: 1; }
+        .cta-button { 
+            display: inline-block; 
+            background-color: var(--accent-color); 
+            color: white; 
+            padding: 12px 35px; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            margin-top: 20px; 
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+        .cta-button:hover { 
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .layer-table, .comparison-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-size: 0.9em; 
+            text-align: left;
+            overflow-x: auto;
+            display: block;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 25px 0;
+        }
+        .layer-table, .comparison-table {
+            display: table;
+            min-width: 600px;
+        }
+        .layer-table th, .layer-table td, .comparison-table th, .comparison-table td { 
+            padding: 12px 15px; 
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+        }
+        .layer-table th, .comparison-table th { 
+            background-color: var(--code-bg); 
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        .benefits-list { 
+            list-style: none; 
+            padding: 0; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+        }
+        .benefits-list li { 
+            background-color: var(--card-bg); 
+            padding: 20px; 
+            border-left: 5px solid var(--primary-color); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            flex: 1 1 300px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 4px;
+        }
+        .benefits-list li:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        .step-card { 
+            background-color: var(--card-bg); 
+            padding: 30px; 
+            margin-bottom: 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .step-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .step-card h3 { 
+            color: var(--primary-color); 
+            border-bottom: 1px dashed var(--border-color); 
+            padding-bottom: 10px;
+        }
+        
+        /* Code Block Copy Button */
+        .code-container {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+        .code-container:hover .copy-btn {
+            opacity: 1;
+        }
+        .copy-btn:hover {
+            opacity: 0.9;
+        }
+        .copy-btn.copied {
+            background: #4caf50;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .toc h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 8px 0;
+        }
+        .toc a {
+            color: var(--text-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .toc a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Architecture Diagram */
+        .architecture-diagram {
+            width: 100%;
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .architecture-diagram svg {
+            width: 100%;
+            height: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8em; }
+            .nav-links { flex-direction: column; gap: 10px; }
+            .benefits-list li { flex: 1 1 100%; }
+            .step-card { padding: 20px; }
+            .table-wrapper { margin: 15px -20px; }
+            .architecture-diagram { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sticky-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li><a href="#hero">Home</a></li>
+                <li><a href="#core">Core</a></li>
+                <li><a href="#guide">Guide</a></li>
+                <li><a href="#advanced">Advanced</a></li>
+                <li><a href="#mvn-vs-mvvm">Comparison</a></li>
+            </ul>
+            <button class="theme-toggle" aria-label="Toggle dark mode" onclick="toggleTheme()">🌓 Dark Mode</button>
+        </div>
+    </nav>
+
+    <header id="hero" class="header">
+        <div class="container">
+            <h1>The MVN Architecture for Flutter & Riverpod</h1>
+            <p>A modern, scalable pattern designed to bring unparalleled clarity and efficiency to your Flutter applications by leveraging the power of Riverpod.</p>
+            <a href="#guide" class="cta-button">Start Building with MVN</a>
+
+            <div style="margin-top: 40px; display: flex; justify-content: center; gap: 30px;">
+                <p><strong>✓ Idiomatic Riverpod Fit</strong></p>
+                <p><strong>✓ Unidirectional Data Flow</strong></p>
+                <p><strong>✓ Superior Testability</strong></p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <aside class="toc" role="complementary" aria-label="Table of contents">
+            <h3>📑 Table of Contents</h3>
+            <ul>
+                <li><a href="#core">Core Architecture: Three Layers</a></li>
+                <li><a href="#guide">Implementation Guide</a></li>
+                <li><a href="#advanced">Advanced Usage & Pitfalls</a></li>
+                <li><a href="#mvn-vs-mvvm">MVN vs. MVVM</a></li>
+            </ul>
+        </aside>
+
+        <section id="core">
+            <h2>🏗️ Core Architecture: Three Layers, One Flow</h2>
+            <p>The MVN (Model-View-Notifier) architecture is a modern, scalable pattern for Flutter applications leveraging the Riverpod state management library. It emphasizes a clear separation of concerns and a unidirectional data flow.</p>
+            <p>The architecture is composed of three distinct layers:</p>
+
+            <div class="architecture-diagram">
+                <svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        .diagram-bg { fill: none; }
+                        .view-layer { fill: #3f51b5; opacity: 0.1; stroke: #3f51b5; stroke-width: 2; }
+                        .notifier-layer { fill: #ff9800; opacity: 0.1; stroke: #ff9800; stroke-width: 2; }
+                        .model-layer { fill: #4caf50; opacity: 0.1; stroke: #4caf50; stroke-width: 2; }
+                        .text-primary { fill: #333; font-family: Arial, sans-serif; }
+                        .text-secondary { fill: #666; font-family: Arial, sans-serif; }
+                        .arrow { stroke: #333; stroke-width: 3; }
+                        .arrow-red { stroke: #e91e63; stroke-width: 2; }
+                        .arrowhead { fill: #333; }
+                        .arrowhead-red { fill: #e91e63; }
+                        [data-theme="dark"] .text-primary { fill: #e0e0e0; }
+                        [data-theme="dark"] .text-secondary { fill: #b0b0b0; }
+                        [data-theme="dark"] .arrow { stroke: #e0e0e0; }
+                        [data-theme="dark"] .arrowhead { fill: #e0e0e0; }
+                    </style>
+                    
+                    <!-- Background -->
+                    <rect width="700" height="500" class="diagram-bg"/>
+                    
+                    <!-- View Layer -->
+                    <rect x="50" y="50" width="600" height="100" rx="10" class="view-layer"/>
+                    <text x="350" y="85" class="text-primary" font-size="24" font-weight="bold" text-anchor="middle">View Layer</text>
+                    <text x="350" y="110" class="text-primary" font-size="14" text-anchor="middle">ConsumerWidget / ConsumerStatefulWidget</text>
+                    <text x="350" y="130" class="text-secondary" font-size="12" text-anchor="middle">Displays state • Forwards user interactions</text>
+                    
+                    <!-- Notifier Layer -->
+                    <rect x="50" y="200" width="600" height="100" rx="10" class="notifier-layer"/>
+                    <text x="350" y="235" class="text-primary" font-size="24" font-weight="bold" text-anchor="middle">Notifier Layer</text>
+                    <text x="350" y="260" class="text-primary" font-size="14" text-anchor="middle">Notifier / StateNotifier</text>
+                    <text x="350" y="280" class="text-secondary" font-size="12" text-anchor="middle">Manages UI state • Updates state • Bridges Model and View</text>
+                    
+                    <!-- Model Layer -->
+                    <rect x="50" y="350" width="600" height="100" rx="10" class="model-layer"/>
+                    <text x="350" y="385" class="text-primary" font-size="24" font-weight="bold" text-anchor="middle">Model Layer</text>
+                    <text x="350" y="410" class="text-primary" font-size="14" text-anchor="middle">Provider (Repositories / Services)</text>
+                    <text x="350" y="430" class="text-secondary" font-size="12" text-anchor="middle">Data • Business logic • Data fetching</text>
+                    
+                    <!-- Arrow from Model to Notifier -->
+                    <path d="M 350 350 L 350 300" class="arrow" fill="none" marker-end="url(#arrowhead)"/>
+                    <text x="380" y="320" class="text-primary" font-size="12">ref.read</text>
+                    <text x="380" y="335" class="text-primary" font-size="12">Data</text>
+                    
+                    <!-- Arrow from Notifier to View -->
+                    <path d="M 350 200 L 350 150" class="arrow" fill="none" marker-end="url(#arrowhead)"/>
+                    <text x="380" y="170" class="text-primary" font-size="12">ref.watch</text>
+                    <text x="380" y="185" class="text-primary" font-size="12">State</text>
+                    
+                    <!-- Reverse arrow from View to Notifier (user actions) -->
+                    <path d="M 320 150 Q 280 180 290 190" class="arrow-red" fill="none" marker-end="url(#arrowhead-red)"/>
+                    <text x="250" y="165" font-family="Arial, sans-serif" font-size="11" fill="#e91e63">User Actions</text>
+                    
+                    <!-- Arrow definitions -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" class="arrowhead"/>
+                        </marker>
+                        <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" class="arrowhead-red"/>
+                        </marker>
+                    </defs>
+                    
+                    <!-- Labels for data flow -->
+                    <rect x="550" y="260" width="90" height="60" rx="5" fill="var(--card-bg)" opacity="0.95" stroke="var(--border-color)" stroke-width="1"/>
+                    <text x="595" y="280" class="text-primary" font-size="11" text-anchor="middle" font-weight="bold">Unidirectional</text>
+                    <text x="595" y="295" class="text-primary" font-size="11" text-anchor="middle" font-weight="bold">Data Flow</text>
+                    <text x="595" y="310" class="text-secondary" font-size="9" text-anchor="middle">State → View</text>
+                </svg>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="layer-table">
+                    <thead>
+                        <tr>
+                            <th>Layer</th>
+                            <th>Responsibility</th>
+                            <th>Riverpod Component</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Model</strong></td>
+                            <td>Application data, business logic, and data fetching (e.g., repositories, services, data objects).</td>
+                            <td><code>Provider</code> (for repositories/services)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Notifier</strong></td>
+                            <td>Manages the UI state for a feature, contains logic to update the state, and bridges the Model and View.</td>
+                            <td><code>Notifier</code> or <code>StateNotifier</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>View</strong></td>
+                            <td>The UI layer (Flutter widgets). Displays the state and forwards user interactions to the Notifier.</td>
+                            <td><code>ConsumerWidget</code> or <code>ConsumerStatefulWidget</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Key Benefits</h3>
+            <ul class="benefits-list">
+                <li><strong>Clear Separation of Concerns:</strong> Distinguishes UI, state management, and business logic effectively.</li>
+                <li><strong>Enhanced Scalability:</strong> Encourages the use of multiple, focused notifiers to prevent "Fat Notifiers."</li>
+                <li><strong>Improved Testability:</strong> Layers are easily testable in isolation via Riverpod's dependency injection.</li>
+                <li><strong>Predictable State Management:</strong> Achieved through immutable state classes (often using sealed classes for states like Loading, Success, Error).</li>
+                <li><strong>Reactive and Efficient UI:</strong> Riverpod ensures the View only rebuilds when the specific state it's <code>ref.watch</code>-ing changes.</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <section id="guide">
+            <h2>🛠️ Implementation Guide: Building a Feature with MVN</h2>
+            <p>A practical, three-step guide for implementing an MVN feature (e.g., a movie list).</p>
+
+            <div class="step-card" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); color: white; border-left: 5px solid white;">
+                <h3 style="color: white; border-bottom: 1px dashed rgba(255,255,255,0.5);">⚡ Quick Start with VSCode Extension</h3>
+                <p style="margin-bottom: 15px;">Speed up your development process with our VSCode extension that automatically generates Clean Architecture folder structures with MVN pattern and Riverpod for Flutter projects!</p>
+                <p style="margin-bottom: 15px;"><strong>Features:</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 15px;">
+                    <li>Automatic folder structure generation</li>
+                    <li>Basic file templates with MVN patterns</li>
+                    <li>Right-click menu integration</li>
+                </ul>
+                <a href="https://marketplace.visualstudio.com/items?itemName=CleanArchitectureandMVNwithRiverPod.clean-architecture-riverpod-mvn" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: white; color: var(--primary-color); padding: 10px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: transform 0.3s;">Get the Extension →</a>
+            </div>
+
+            <div class="step-card">
+                <h3>Step 1: The Model Layer 🧱</h3>
+                <p>Defines data (<code>Movie</code> class) and the repository (<code>MovieRepository</code>) for data fetching.</p>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copy code">Copy</button>
+                    <pre><code class="language-dart">// movie_model.dart & movie_repository.dart
+class Movie { /* ... movie properties ... */ }
+
+class MovieRepository {
+  Future&lt;List&lt;Movie&gt;&gt; fetchMovies() async { /* ... API call ... */ }
+}
+
+// movie_providers.dart
+final movieRepositoryProvider = Provider((ref) => MovieRepository());</code></pre>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <h3>Step 2: The Notifier Layer 🧠</h3>
+                <p>Manages the state using a sealed class (<code>MovieState</code>) and the Notifier logic (<code>MoviesNotifier</code>).</p>
+                <h4>State Definition:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copy code">Copy</button>
+                    <pre><code class="language-dart">// movies_state.dart
+sealed class MovieState {}
+class MovieLoading extends MovieState {}
+class MovieSuccess extends MovieState { final List&lt;Movie&gt; movies; }
+class MovieError extends MovieState { final String errorMessage; }</code></pre>
+                </div>
+                <h4>Notifier Logic:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copy code">Copy</button>
+                    <pre><code class="language-dart">// movies_notifier.dart
+class MoviesNotifier extends Notifier&lt;MovieState&gt; {
+  @override
+  MovieState build() { /* ... initial state and reactive dependencies ... */ }
+  
+  Future&lt;void&gt; fetchMovies() async {
+    // Reads Model (Repository), updates state based on result.
+    final repo = ref.read(movieRepositoryProvider);
+    // ... logic to update state to MovieLoading, then MovieSuccess/MovieError
+  }
+}
+
+// movie_providers.dart
+final moviesNotifierProvider = NotifierProvider&lt;MoviesNotifier, MovieState&gt;(() {
+  return MoviesNotifier();
+});</code></pre>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <h3>Step 3: The View Layer 👀</h3>
+                <p>A <code>ConsumerWidget</code> that listens to the <code>moviesNotifierProvider</code> to display the state and dispatches actions to the Notifier.</p>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copy code">Copy</button>
+                    <pre><code class="language-dart">// movies_screen.dart
+class MoviesScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final movieState = ref.watch(moviesNotifierProvider);
+    
+    // UI logic to render based on MovieLoading(), MovieSuccess(), or MovieError()
+    if (movieState is MovieLoading) {
+        return const CircularProgressIndicator();
+    }
+    
+    // User actions call: 
+    // ref.read(moviesNotifierProvider.notifier).fetchMovies();
+  }
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="advanced">
+            <h2>💡 Advanced Usage: Addressing Potential Pitfalls</h2>
+            <p>While powerful, the multi-notifier MVN architecture has potential challenges. Here's how to anticipate and avoid them.</p>
+
+            <div class="table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Challenge</th>
+                            <th>Solution</th>
+                            <th>Implementation Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Complex State Synchronization</td>
+                            <td>Use <code>ref.watch</code> inside the Notifier's <code>build</code> method.</td>
+                            <td>Creates a reactive dependency chain, automatically re-running logic on dependency change.</td>
+                        </tr>
+                        <tr>
+                            <td>Handling One-Time Events</td>
+                            <td>Use <code>ref.listen</code> in the View for side effects.</td>
+                            <td>Triggers actions (SnackBar, navigation) only when state changes, preventing re-triggers on rebuilds.</td>
+                        </tr>
+                        <tr>
+                            <td>Overly Complex View Layer</td>
+                            <td>Use <code>.select</code> or split UI into smaller <code>ConsumerWidgets</code>.</td>
+                            <td>Reduces unnecessary widget rebuilds and cleans up the main build method.</td>
+                        </tr>
+                        <tr>
+                            <td>Increased Boilerplate</td>
+                            <td>Accept the trade-off for long-term maintainability and use IDE snippets for fast component creation.</td>
+                            <td>Boilerplate is considered the cost of robust, scalable architecture.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Pitfall 1: Complex State Synchronization</h3>
+            <p>The Challenge: When a feature uses multiple notifiers (e.g., FilterNotifier and MoviesNotifier), coordinating state changes can be difficult. A change in the filter should automatically trigger a movie refetch.</p>
+            <p>How to Avoid It: Use <code>ref.watch</code> inside your providers. Create a reactive dependency chain where the MoviesNotifier watches the FilterNotifier. Riverpod will automatically handle re-running the logic when the dependency changes.</p>
+            <div class="code-container">
+                <button class="copy-btn" onclick="copyCode(this)" aria-label="Copy code">Copy</button>
+                <pre><code class="language-dart">// Provider for the filter
+final movieFilterProvider = StateProvider&lt;MovieFilter&gt;((ref) => MovieFilter.all);
+
+// The MoviesNotifier WATCHES the filter provider
+class MoviesNotifier extends Notifier&lt;MovieState&gt; {
+  @override
+  MovieState build() {
+    // This creates a reactive link. When movieFilterProvider changes,
+    // this build method will re-run automatically.
+    final currentFilter = ref.watch(movieFilterProvider);
+    _fetchMovies(filter: currentFilter); // Trigger the initial fetch
+    return MovieLoading();
+  }
+  
+  Future&lt;void&gt; _fetchMovies({required MovieFilter filter}) async { /* ... */ }
+}</code></pre>
+            </div>
+
+            <h3>Pitfall 2: Handling One-Time Events (Side Effects)</h3>
+            <p>The Challenge: You need to trigger actions that should only happen once per event, like showing a SnackBar or navigating to a new screen. Placing a boolean like <code>showErrorSnackbar</code> in your state is a bad practice, as it can re-trigger the event on screen rotation.</p>
+            <p>How to Avoid It: Use <code>ref.listen</code> in the View. This function is specifically designed to observe a provider's state and execute actions (side effects) without causing the widget to rebuild.</p>
+            <div class="code-container">
+                <button class="copy-btn" onclick="copyCode(this)" aria-label="Copy code">Copy</button>
+                <pre><code class="language-dart">// Inside a ConsumerWidget's build method
+ref.listen&lt;MovieState&gt;(moviesNotifierProvider, (previousState, newState) {
+  if (newState is MovieError) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(newState.errorMessage)),
+    );
+  }
+  // Add navigation logic here as well.
+});</code></pre>
+            </div>
+
+            <h3>Pitfall 3: Overly Complex View Layer</h3>
+            <p>The Challenge: As the View listens to multiple notifiers, the build method can become cluttered with <code>ref.watch</code> calls, potentially leading to unnecessary rebuilds of the entire screen.</p>
+            <p>How to Avoid It:</p>
+            <ul>
+                <li><strong>Be Granular with select:</strong> If your widget only depends on a small piece of a larger state object, use <code>.select</code> to listen only to changes in that specific value.</li>
+                <li><strong>Split Your UI:</strong> Break down your UI into smaller <code>ConsumerWidgets</code>, each listening to only the state it needs.</li>
+            </ul>
+
+            <h3>Pitfall 4: Increased Boilerplate</h3>
+            <p>The Challenge: Creating multiple files (state, notifier, provider) for each feature can feel repetitive and slow down initial development.</p>
+            <p>How to Avoid It:</p>
+            <ul>
+                <li><strong>Accept it as a Trade-off:</strong> This boilerplate is the price for long-term maintainability and scalability.</li>
+                <li><strong>Use Good Project Structure:</strong> Organize your files by feature (e.g., a <code>feature/movies</code> folder) to keep everything related in one place.</li>
+                <li><strong>Use IDE Snippets:</strong> Create file templates or code snippets in your IDE to quickly generate the basic structure for your MVN components.</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <section id="mvn-vs-mvvm">
+            <h2>🎯 MVN vs. MVVM: The Idiomatic Choice for Riverpod</h2>
+            <p>It's a fair and important question. The Model-View-ViewModel (MVVM) pattern is a powerful and proven architecture. The MVN pattern I've proposed does not seek to invalidate MVVM; rather, it provides a specialized evolution that is a more natural and productive fit for the Riverpod ecosystem.</p>
+            <p>While you can certainly implement MVVM using Riverpod, the MVN pattern offers a more direct, intuitive, and idiomatic path. Here's a breakdown of the key advantages:</p>
+
+            <h3>1. Semantic Clarity and Intuitiveness</h3>
+            <p>The single biggest advantage is in the name itself. The term "ViewModel" is abstract—it describes a role, but not an implementation. In the MVN pattern, the "Notifier" directly maps to a concrete class in the Riverpod library: <code>Notifier</code> or <code>StateNotifier</code>.</p>
+            <ul>
+                <li><strong>Traditional MVVM:</strong> A developer on your team asks, "What are we using for our ViewModels?" The answer is, "We use Riverpod's StateNotifier classes to act as our ViewModels." This requires a mental translation.</li>
+                <li><strong>MVN Pattern:</strong> The same question is answered by the architecture itself. The "N" in MVN is the Notifier. This reduces cognitive load and makes the architecture instantly understandable for anyone familiar with Riverpod.</li>
+            </ul>
+
+            <h3>2. An Idiomatic, Riverpod-First Implementation</h3>
+            <p>MVN is not just a pattern that uses Riverpod; it's a pattern designed around Riverpod's core principles.</p>
+            <ul>
+                <li>It embraces the reactive nature of providers, encouraging the use of <code>ref.watch</code> inside notifiers to create declarative dependency chains.</li>
+                <li>It aligns with Riverpod's philosophy of having many small, focused providers rather than a few large, monolithic state objects.</li>
+                <li>A generic MVVM implementation might treat the state management library as a pluggable detail, whereas MVN embraces Riverpod as the central nervous system of the state layer.</li>
+            </ul>
+
+            <h3>3. A Clear and Prescriptive Convention</h3>
+            <p>By giving this pattern a specific name, we create a powerful convention for teams. When you say, "We are using the MVN architecture," it immediately communicates a clear set of rules and file structures.</p>
+            <p>This shared language removes ambiguity during code reviews and makes onboarding new developers significantly faster. Instead of debating how to implement a ViewModel, the team has a clear, established pattern to follow.</p>
+
+            <div class="table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Traditional MVVM in Flutter</th>
+                            <th>MVN with Riverpod</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Core Component</strong></td>
+                            <td>Abstract "ViewModel." The implementation (e.g., ChangeNotifier, StateNotifier) can vary.</td>
+                            <td>A concrete <code>Notifier</code> or <code>StateNotifier</code>. The pattern's name dictates the choice.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>State Exposure</strong></td>
+                            <td>Can be inconsistent. Often requires manual setup with Streams or ValueNotifier.</td>
+                            <td>Exposes an immutable state object managed directly and efficiently by Riverpod.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Developer Experience</strong></td>
+                            <td>Requires mapping a generic architectural concept onto Riverpod's specific tools.</td>
+                            <td>Uses Riverpod's tools directly and naturally. The pattern feels like an extension of the library itself.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Team Convention</strong></td>
+                            <td>"We use MVVM, and our ViewModels are Riverpod Notifiers."</td>
+                            <td><strong>"We use MVN."</strong> (Simpler, clearer, and less ambiguous).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="text-align: center; font-style: italic; margin-top: 30px;">
+                <strong>Conclusion:</strong> In essence, while you can absolutely build a great app by applying MVVM principles with Riverpod, the MVN pattern offers a path of less resistance. It provides a refined vocabulary and a structure that is purpose-built for the tools you are already using, leading to code that is not only robust and scalable but also a genuine pleasure to write and maintain.
+            </p>
+        </section>
+
+    </main>
+
+    <button class="back-to-top" onclick="scrollToTop()" aria-label="Back to top">↑</button>
+
+    <footer style="background-color: #263238; color: #b0bec5; padding: 20px 0; text-align: center; margin-top: 50px;">
+        <div class="container">
+            <p>&copy; 2025 MVN Architecture Guide. Built for Flutter & Riverpod developers.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        // Update diagram colors based on theme
+        function updateDiagramTheme(theme) {
+            const svg = document.querySelector('.architecture-diagram svg');
+            if (!svg) return;
+            
+            const textElements = svg.querySelectorAll('.text-primary, .text-secondary, .arrow, .arrowhead');
+            if (theme === 'dark') {
+                textElements.forEach(el => {
+                    if (el.classList.contains('text-primary')) {
+                        el.setAttribute('fill', '#e0e0e0');
+                    } else if (el.classList.contains('text-secondary')) {
+                        el.setAttribute('fill', '#b0b0b0');
+                    } else if (el.classList.contains('arrow')) {
+                        el.setAttribute('stroke', '#e0e0e0');
+                    } else if (el.classList.contains('arrowhead')) {
+                        el.setAttribute('fill', '#e0e0e0');
+                    }
+                });
+                // Update info box
+                const infoBox = svg.querySelector('rect[opacity="0.95"]');
+                if (infoBox) {
+                    const computedStyle = getComputedStyle(document.documentElement);
+                    infoBox.setAttribute('fill', computedStyle.getPropertyValue('--card-bg'));
+                    infoBox.setAttribute('stroke', computedStyle.getPropertyValue('--border-color'));
+                }
+            } else {
+                textElements.forEach(el => {
+                    if (el.classList.contains('text-primary')) {
+                        el.setAttribute('fill', '#333');
+                    } else if (el.classList.contains('text-secondary')) {
+                        el.setAttribute('fill', '#666');
+                    } else if (el.classList.contains('arrow')) {
+                        el.setAttribute('stroke', '#333');
+                    } else if (el.classList.contains('arrowhead')) {
+                        el.setAttribute('fill', '#333');
+                    }
+                });
+                const infoBox = svg.querySelector('rect[opacity="0.95"]');
+                if (infoBox) {
+                    infoBox.setAttribute('fill', '#ffffff');
+                    infoBox.setAttribute('stroke', '#ddd');
+                }
+            }
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+            updateDiagramTheme(newTheme);
+        }
+
+        function updateThemeButton(theme) {
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌓 Dark Mode';
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeButton(savedTheme);
+        updateDiagramTheme(savedTheme);
+
+        // Copy Code Functionality
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling.querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                button.textContent = 'Failed';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        // Back to Top Button
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Show/hide back to top button
+        window.addEventListener('scroll', () => {
+            const backToTopBtn = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
