@@ -16,7 +16,7 @@
             --header-bg: #3f51b5;
             --card-bg: #ffffff;
             --border-color: #ddd;
-            --code-bg: #e8eaf6;
+            --code-bg: #f0f0f0;
             --primary-color: #3f51b5;
             --accent-color: #ff9800;
         }
@@ -217,6 +217,14 @@
             border-bottom: 1px dashed var(--border-color); 
             padding-bottom: 10px;
         }
+        .gradient-card-enhanced {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color) 50%, rgba(63, 81, 181, 0.85) 100%);
+            box-shadow: 0 8px 25px rgba(63, 81, 181, 0.3);
+        }
+        [data-theme="dark"] .gradient-card-enhanced {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color) 50%, rgba(92, 107, 192, 0.85) 100%);
+            box-shadow: 0 8px 25px rgba(92, 107, 192, 0.3);
+        }
         
         /* Code Block Copy Button */
         .code-container {
@@ -389,12 +397,14 @@
                         .model-layer { fill: #4caf50; opacity: 0.1; stroke: #4caf50; stroke-width: 2; }
                         .text-primary { fill: #333; font-family: Arial, sans-serif; }
                         .text-secondary { fill: #666; font-family: Arial, sans-serif; }
+                        .user-action-text { fill: #212121; font-family: Arial, sans-serif; font-weight: bold; }
                         .arrow { stroke: #333; stroke-width: 3; }
                         .arrow-red { stroke: #e91e63; stroke-width: 2; }
                         .arrowhead { fill: #333; }
                         .arrowhead-red { fill: #e91e63; }
                         [data-theme="dark"] .text-primary { fill: #e0e0e0; }
                         [data-theme="dark"] .text-secondary { fill: #b0b0b0; }
+                        [data-theme="dark"] .user-action-text { fill: #ffffff; }
                         [data-theme="dark"] .arrow { stroke: #e0e0e0; }
                         [data-theme="dark"] .arrowhead { fill: #e0e0e0; }
                     </style>
@@ -420,19 +430,19 @@
                     <text x="350" y="410" class="text-primary" font-size="14" text-anchor="middle">Provider (Repositories / Services)</text>
                     <text x="350" y="430" class="text-secondary" font-size="12" text-anchor="middle">Data • Business logic • Data fetching</text>
                     
-                    <!-- Arrow from Model to Notifier -->
-                    <path d="M 350 350 L 350 300" class="arrow" fill="none" marker-end="url(#arrowhead)"/>
+                    <!-- Arrow from Notifier to Model (dependency) -->
+                    <path d="M 350 300 L 350 350" class="arrow" fill="none" marker-end="url(#arrowhead)"/>
                     <text x="380" y="320" class="text-primary" font-size="12">ref.read</text>
-                    <text x="380" y="335" class="text-primary" font-size="12">Data</text>
+                    <text x="380" y="335" class="text-primary" font-size="12">Reads Data</text>
                     
-                    <!-- Arrow from Notifier to View -->
-                    <path d="M 350 200 L 350 150" class="arrow" fill="none" marker-end="url(#arrowhead)"/>
+                    <!-- Arrow from View to Notifier (dependency) -->
+                    <path d="M 350 150 L 350 200" class="arrow" fill="none" marker-end="url(#arrowhead)"/>
                     <text x="380" y="170" class="text-primary" font-size="12">ref.watch</text>
-                    <text x="380" y="185" class="text-primary" font-size="12">State</text>
+                    <text x="380" y="185" class="text-primary" font-size="12">Watches State</text>
                     
-                    <!-- Reverse arrow from View to Notifier (user actions) -->
-                    <path d="M 320 150 Q 280 180 290 190" class="arrow-red" fill="none" marker-end="url(#arrowhead-red)"/>
-                    <text x="250" y="165" font-family="Arial, sans-serif" font-size="11" fill="#e91e63">User Actions</text>
+                    <!-- Arrow from View to Notifier (user actions) -->
+                    <path d="M 300 150 Q 250 175 280 200" class="arrow-red" fill="none" marker-end="url(#arrowhead-red)" stroke-width="2.5"/>
+                    <text x="240" y="170" class="user-action-text" font-size="11">User Actions</text>
                     
                     <!-- Arrow definitions -->
                     <defs>
@@ -444,11 +454,11 @@
                         </marker>
                     </defs>
                     
-                    <!-- Labels for data flow -->
-                    <rect x="550" y="260" width="90" height="60" rx="5" fill="var(--card-bg)" opacity="0.95" stroke="var(--border-color)" stroke-width="1"/>
-                    <text x="595" y="280" class="text-primary" font-size="11" text-anchor="middle" font-weight="bold">Unidirectional</text>
-                    <text x="595" y="295" class="text-primary" font-size="11" text-anchor="middle" font-weight="bold">Data Flow</text>
-                    <text x="595" y="310" class="text-secondary" font-size="9" text-anchor="middle">State → View</text>
+                    <!-- Labels for dependency chain -->
+                    <rect x="540" y="260" width="110" height="60" rx="5" fill="var(--card-bg)" opacity="0.95" stroke="var(--border-color)" stroke-width="1"/>
+                    <text x="595" y="280" class="text-primary" font-size="11" text-anchor="middle" font-weight="bold">Dependency</text>
+                    <text x="595" y="295" class="text-primary" font-size="11" text-anchor="middle" font-weight="bold">Chain</text>
+                    <text x="595" y="310" class="text-secondary" font-size="9" text-anchor="middle">View → Notifier → Model</text>
                 </svg>
             </div>
 
@@ -497,16 +507,19 @@
             <h2>🛠️ Implementation Guide: Building a Feature with MVN</h2>
             <p>A practical, three-step guide for implementing an MVN feature (e.g., a movie list).</p>
 
-            <div class="step-card" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); color: white; border-left: 5px solid white;">
-                <h3 style="color: white; border-bottom: 1px dashed rgba(255,255,255,0.5);">⚡ Quick Start with VSCode Extension</h3>
-                <p style="margin-bottom: 15px;">Speed up your development process with our VSCode extension that automatically generates Clean Architecture folder structures with MVN pattern and Riverpod for Flutter projects!</p>
-                <p style="margin-bottom: 15px;"><strong>Features:</strong></p>
-                <ul style="margin-left: 20px; margin-bottom: 15px;">
-                    <li>Automatic folder structure generation</li>
-                    <li>Basic file templates with MVN patterns</li>
-                    <li>Right-click menu integration</li>
-                </ul>
-                <a href="https://marketplace.visualstudio.com/items?itemName=CleanArchitectureandMVNwithRiverPod.clean-architecture-riverpod-mvn" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: white; color: var(--primary-color); padding: 10px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: transform 0.3s;">Get the Extension →</a>
+            <div class="step-card gradient-card-enhanced" style="color: white; border-left: 5px solid rgba(255,255,255,0.3); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); pointer-events: none;"></div>
+                <h3 style="color: white; border-bottom: 1px dashed rgba(255,255,255,0.5); position: relative; z-index: 1;">⚡ Quick Start with VSCode Extension</h3>
+                <div style="position: relative; z-index: 1;">
+                    <p style="margin-bottom: 15px;">Speed up your development process with our VSCode extension that automatically generates Clean Architecture folder structures with MVN pattern and Riverpod for Flutter projects!</p>
+                    <p style="margin-bottom: 15px;"><strong>Features:</strong></p>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>Automatic folder structure generation</li>
+                        <li>Basic file templates with MVN patterns</li>
+                        <li>Right-click menu integration</li>
+                    </ul>
+                    <a href="https://marketplace.visualstudio.com/items?itemName=CleanArchitectureandMVNwithRiverPod.clean-architecture-riverpod-mvn" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: white; color: var(--primary-color); padding: 10px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; z-index: 1;">Get the Extension →</a>
+                </div>
             </div>
 
             <div class="step-card">
